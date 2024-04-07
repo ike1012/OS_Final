@@ -5,9 +5,23 @@
 
 //#include "create.c"
 
+typedef struct
+{
+
+    char name[50];
+    char ID[10];
+    int balance;
+
+    struct UserAccount *next;
+
+} UserAccount;
+
+struct UserAccount *AllAccounts;
+
 int main()
 {
     int sel;
+    AllAccounts = NULL;
     
     while (1)
     {
