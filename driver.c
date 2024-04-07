@@ -4,15 +4,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-typedef struct
-{
-
-    char ID[10];
-    int balance;
-
-    struct UserAccount *next;
-
-} UserAccount;
+#include "includes.h"
 
 typedef struct {
 
@@ -24,10 +16,6 @@ typedef struct {
 } Transaction;
 
 struct UserAccount *AllAccounts;
-
-char *readLine(char *data, int index, int size);
-void clearStr(char *str, int len);
-int len(char *str);
 
 int main(char *args)
 {
@@ -58,7 +46,6 @@ int main(char *args)
         memset(&tx, 0, sizeof(Transaction));
     }
 
-    fclose(inputFile); 
 
 
 
