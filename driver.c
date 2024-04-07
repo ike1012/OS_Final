@@ -4,21 +4,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-typedef struct
-{
-
-    char ID[10];
-    int balance;
-
-    struct UserAccount *next;
-
-} UserAccount;
+#include "includes.h"
 
 struct UserAccount *AllAccounts;
-
-char *readLine(char *data, int index, int size);
-void clearStr(char *str, int len);
-int len(char *str);
 
 int main(char *args)
 {
@@ -73,7 +61,7 @@ int main(char *args)
                 Do stuff right here with the line to parse individual parts
                 Structure is as follows:
                     Line 0: Total Accounts
-                    Line 1+: {AccountID} {Action} {Value}
+                    Line 1+: {AccountID} {Action} {Value} {AltAccountID}
             
             */
 
