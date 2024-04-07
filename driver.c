@@ -60,7 +60,7 @@ int main() {
 
     fclose(inputFile); // Corrected variable name to inputFile
 
-    // Commented out the fork() part for simplicity as it requires more context to be correctly implemented
+    
     /*
     if (numUsers > 0) {
         for (int i = 0; i < numUsers; i++) {
