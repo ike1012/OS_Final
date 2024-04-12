@@ -1,5 +1,5 @@
 
-typedef struct
+typedef struct UserAccount
 {
 
     char ID[10];
@@ -13,4 +13,6 @@ char *readLine(char *data, int index, int size);
 void clearStr(char *str, int len);
 int len(char *str);
 
-void createNewAccount(char *accountID, int startingBalance);
+UserAccount *createNewAccount(UserAccount *accounts, char *accountID, int startingBalance);
+void closeAccount(UserAccount *accounts, char *accountID);
+UserAccount *findAccount(UserAccount *accounts, char *accountID);

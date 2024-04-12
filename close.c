@@ -6,11 +6,12 @@
 
 #include "includes.h"
 
-extern struct UserAccount *AllAccounts;
-
-void closeAccount(char *accountID)
+void closeAccount(UserAccount *accounts, char *accountID)
 {
-    if (AllAccounts == NULL)
+    // Make sure we have accounts first
+    if (accounts == NULL)
         return;
+
+    // Need action for closing
 
 }
