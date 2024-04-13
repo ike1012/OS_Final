@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-
 #include "includes.h"
 
 UserAccount *createNewAccount(UserAccount *accounts, char *accountID, int startingBalance)
 {
+    // =====================================================
+    // NEED THREAD LOCKING CODE
+    // =====================================================
+    
+
+
     // Check if the list has been created yet
     if (accounts == NULL)
     {
@@ -41,23 +41,4 @@ UserAccount *createNewAccount(UserAccount *accounts, char *accountID, int starti
     ua->next = newAccount;
 
     return newAccount;
-}
-
-UserAccount *findAccount(UserAccount *accounts, char *accountID)
-{
-    if (accounts == NULL)
-        return NULL;
-
-    if (strcmp(accounts->ID, accountID) == 0)
-        return accounts;
-
-    struct UserAccount *ua = accounts->next;
-    while (ua != NULL)
-    {
-        if (strcmp(ua->ID, accountID) == 0)
-            return accounts;
-
-        ua = ua->next;
-    }
-    return NULL;
 }
