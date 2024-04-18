@@ -122,20 +122,37 @@ int main(char *args)
                         }
                         else if (strcmp(action, "Withdraw") == 0) //----------------------- Withdraw Funds
                         {
+                            char *withdrawAmountStr = readSplit(cLine, lineIndex);
+                            int withdrawAmount = strToInt(withdrawAmountStr);
 
+                            AllAccounts = withdrawFunds(AllAccounts, acct, withdrawAmount);
+                            debug_DisplayAccountListings(AllAccounts);
                         }
+
                         else if (strcmp(action, "Deposit") == 0) //----------------------- Deposit Funds
                         {
+                            char *depositAmountStr = readSplit(cLine, lineIndex);
+                            int depositAmount = strToInt(depositAmountStr);
 
+                            AllAccounts = depositFunds(AllAccounts, acct, depositAmount);
+                            debug_DisplayAccountListings(AllAccounts);
                         }
+
                         else if (strcmp(action, "Inquiry") == 0) //----------------------- Inquire Funds
                         {
-
+                            checkBalance(AllAccounts, acct);
                         }
+
                         else if (strcmp(action, "Transfer") == 0) //----------------------- Transfer Funds
                         {
-
+                            char *transferAmountStr = readSplit(cLine, lineIndex);
+                            int transferAmount = strToInt(transferAmountStr);
+                            char *recipientID = readSplit(cLine, lineIndex);
+                            
+                            AllAccounts = transferFunds(AllAccounts, acct, recipientID, transferAmount);
+                            debug_DisplayAccountListings(AllAccounts);
                         }
+
                         else
                         {
 

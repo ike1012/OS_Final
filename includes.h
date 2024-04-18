@@ -24,7 +24,14 @@ typedef struct UserAccount
 UserAccount *createNewAccount(UserAccount *accounts, char *accountID, int startingBalance);
 UserAccount *closeAccount(UserAccount *accounts, char *accountID);
 UserAccount *findAccount(UserAccount *accounts, char *accountID);
-
+// Function prototype for withdrawing funds
+UserAccount *withdrawFunds(UserAccount *accounts, char *accountID, int amount);
+// Function prototype for depositing funds
+UserAccount *depositFunds(UserAccount *accounts, char *accountID, int amount);
+// Function prototype for transferring funds
+UserAccount *transferFunds(UserAccount *accounts, char *senderID, char *recipientID, int amount);
+// Function prototype for checking account balance
+void checkBalance(UserAccount *accounts, char *accountID);
 // Various string-related functions to make life easier
 char *readSplit(char *data, int index);
 char *readLine(char *data, int index, int size);
