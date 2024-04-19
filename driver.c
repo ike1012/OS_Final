@@ -1,35 +1,37 @@
 #include "includes.h"
 
-struct UserAccount *AllAccounts;
+// Declare the process array
+struct UserProcess **Processes;
+
+pid_t mainThreadPID;
+int mainReady;
 
 int main(char *args)
 {
-    int sel;
-    AllAccounts = NULL;
+    int testVal = -1;
+    char *test = intToStr(testVal);
+    printf("\n\nTEST: [%d] -> {%s}\n\n", testVal, test);
+
+    mainThreadPID = getpid();
+    printf("MAIN THREAD: %d\n", mainThreadPID);
+
+    //-------------------------------------------------- Read input file
 
     char *inputFileName = "inputFile.txt";
     
-    // Open input file for reading
-    FILE *inputFile = fopen(inputFileName, "r");
-    int fSize = 0;
-
-    if (inputFile == NULL)
+    if (fileExists(inputFileName) < 0)
     {
         printf("Input file not found.\n");
         exit(0);
     }
 
-    // Get the file size
-    fseek(inputFile, 0, SEEK_END);
-    fSize = ftell(inputFile);
-    fseek(inputFile, 0, SEEK_SET);
+    int fSize = fileSize(inputFileName);
+    char *fData = readFile(inputFileName);
 
-    // Read the file contents
-    char *fData = malloc(fSize);
-    fread(fData, fSize, 1, inputFile);
+    //-------------------------------------------------- Initialize user account directory
 
-    // Close the file
-    fclose(inputFile);
+    int dirRet = mkdir("accounts", 0777);
+    printf("Initializing directory %d\n", dirRet);
 
     printf("Parsing input file (Size %d)...\n", fSize);
     
@@ -40,16 +42,121 @@ int main(char *args)
             fData[i] = '\n';
     }
 
+    //-------------------------------------------------- Read 1st line of inputFile for user process count
     int index = 0;
     char *cLine = readLine(fData, index, fSize);
     int lineCounter = 0;
-    while (index < fSize)
+
+    int processCount = strToInt(cLine);
+
+    printf("Preparing [%d] processes...\n", processCount);
+    
+    //-------------------------------------------------- Initialize processes database
+    Processes = malloc(sizeof(struct UserProcess) * processCount);
+    for (int i = 0; i < processCount; i++)
+    {
+        Processes[i] = malloc(sizeof(struct UserProcess));
+        clearStr(Processes[i]->ID, 10);
+        Processes[i]->pID = -1;
+    }
+
+    mainReady = 0;
+    printf("Preparing links for processes...\n");
+    
+    //-------------------------------------------------- Create the processes
+    int pIndex = -1;
+    pid_t forked_pid = 0;
+
+    if (forked_pid == 0)
+    {
+        for (int i = 0; i < processCount; i++)
+        {
+            int tmpI = 0;
+            int LC = 0;
+            int goNext = 0;
+
+            while ((tmpI < fSize) && (goNext == 0))
+            {
+                cLine = readLine(fData, tmpI, fSize);
+                if (cLine != NULL)
+                {
+                    
+                    if (LC > 0) // Make sure we aren't on the first line that has the accounts count
+                    {
+                        char *acct = readSplit(cLine, 0);
+                        if (i == 0)
+                        {
+                            printf("linking ID %s to sub-process %d\n", acct, i);
+                            strcpy(Processes[i]->ID, acct);
+                            goNext = 1;
+                        }
+                        else
+                        {
+                            int canUse = 1;
+                            for (int i2 = 0; i2 < i; i2++)
+                            {
+                                if (strcmp(Processes[i2]->ID, acct) == 0) // Check for existing ID link
+                                    canUse = 0;
+                            }
+
+                            if (canUse == 1)
+                            {
+                                printf("linking ID %s to sub-process %d\n", acct, i);
+                                strcpy(Processes[i]->ID, acct);
+                                goNext = 1;
+                            }
+                        }
+                    }
+
+                    LC++;
+
+                    tmpI += len(cLine);
+                    while (cLine[tmpI] == '\n')
+                        tmpI++;
+                } 
+                else
+                {
+                    tmpI++;
+                }
+
+                if (tmpI >= fSize)
+                    break;
+            }
+        }
+
+        mainReady = 1;
+    }
+    
+    printf("Forking processes...\n");
+
+    for (int i = 0; i < processCount; i++)
+    {
+        if (forked_pid == 0)
+        {
+            forked_pid = fork();
+            //printf("pid fork [%d/%d]: %d\n", i, processCount, forked_pid);
+            //-------------------------------------------------- Index each process in the database
+            if ((forked_pid != 0) && (forked_pid != mainThreadPID))
+            {
+                pIndex = i;
+                Processes[i]->pID = forked_pid;
+                break;
+            }
+        }
+    }
+
+
+    if (forked_pid != mainThreadPID)
+    {
+        printf("Process Operation: %d\tIndex: %d\tAccount ID: %s\n", forked_pid, pIndex, Processes[pIndex]->ID);
+    }
+
+    while ((index < fSize) && (forked_pid != 0))
     {
         cLine = readLine(fData, index, fSize);
-        //printf("cLine: {%s}\n", cLine);
+        
         if (cLine != NULL)
         {
-            //printf("%d (len: %d): %s\n", lineCounter, len(cLine), cLine);
             /*
             
                 Do stuff right here with the line to parse individual parts
@@ -59,108 +166,66 @@ int main(char *args)
             
             */
 
+
             if (lineCounter > 0) // Make sure we aren't on the first line that has the accounts count
             {
                 int lineIndex = 0;
 
                 if (len(cLine) > 0)
                 {
-                    //printf("[%d] %d\t{%s}\n", lineCounter, len(cLine), cLine);
-
                     char *acct = readSplit(cLine, lineIndex);
                     lineIndex += len(acct) + 1;
 
                     char *action = readSplit(cLine, lineIndex);
                     lineIndex += len(action) + 1;
 
-                    printf("acct: %s -> action: %s\n", acct, action);
+                    //printf("acct: %s -> action: %s\n", acct, action);
 
-                    // Check if the account exists before performing any actions
-                    if (findAccount(AllAccounts, acct) == NULL)
+                    if (strcmp(Processes[pIndex]->ID, acct) == 0) // Only allow the thread to operate with it's own account
                     {
-                        if (strcmp(action, "Create") == 0)  //----------------------- Create account
-                        {
-                            // Create account here
 
-                            char *startingBalance = readSplit(cLine, lineIndex);
-                            int bal = strToInt(startingBalance);
-
-                            UserAccount *newAccount = createNewAccount(AllAccounts, acct, bal);
-                            if (AllAccounts == NULL)
-                                AllAccounts = newAccount;
-
-                            debug_DisplayAccountListings(AllAccounts);
-                        }
-                        else
+                        if (strcmp(action, "Create") == 0) //----------------------- Create Account
                         {
-                            // Attempting account action on non-existent account
-                            printf("Account \'%s\' doesn't exist!\n", acct);
-                        }
-                    }
-                    else
-                    {
-                        // Account exists, check what action is being performed
-                        if (strcmp(action, "Create") == 0) //----------------------- Create Account ERROR Account Already Exists!
-                        {
-                            // Attempting account creation when account already exists, throw 
-                            // error out to the screen.
-                            printf("Account \'%s\' already exists!\n", acct);
+
+                            int startingBalance = strToInt(readSplit(cLine, lineIndex));
+                            printf("Process %d, AccountID [%s]: Create-> start with %d\n", forked_pid, Processes[pIndex]->ID, startingBalance);
+                            int r = createNewAccount(acct, startingBalance);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Create-> Created Successfully!\n", forked_pid, Processes[pIndex]->ID);
+                            else
+                                printf("Create returned %d\n", r);
+
                         }
                         else if (strcmp(action, "Close") == 0) //----------------------- Close Account
                         {
-                            UserAccount *newAccountList = closeAccount(AllAccounts, acct);
-                            if (newAccountList == NULL)
-                            {
-                                printf("Close Account Error: Account did not exist!\n");
-                            }
-                            else
-                            {
-                                AllAccounts = newAccountList;
-                                debug_DisplayAccountListings(AllAccounts);
-                            }
-
+                            printf("Process %d, AccountID [%s]: Close\n", forked_pid, Processes[pIndex]->ID);
+                            int r = closeAccount(acct);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Closed Successfully!\n", forked_pid, Processes[pIndex]->ID);
                         }
                         else if (strcmp(action, "Withdraw") == 0) //----------------------- Withdraw Funds
                         {
-                            char *withdrawAmountStr = readSplit(cLine, lineIndex);
-                            int withdrawAmount = strToInt(withdrawAmountStr);
 
-                            AllAccounts = withdrawFunds(AllAccounts, acct, withdrawAmount);
-                            debug_DisplayAccountListings(AllAccounts);
                         }
-
                         else if (strcmp(action, "Deposit") == 0) //----------------------- Deposit Funds
                         {
-                            char *depositAmountStr = readSplit(cLine, lineIndex);
-                            int depositAmount = strToInt(depositAmountStr);
 
-                            AllAccounts = depositFunds(AllAccounts, acct, depositAmount);
-                            debug_DisplayAccountListings(AllAccounts);
                         }
-
                         else if (strcmp(action, "Inquiry") == 0) //----------------------- Inquire Funds
                         {
-                            checkBalance(AllAccounts, acct);
-                        }
 
+                        }
                         else if (strcmp(action, "Transfer") == 0) //----------------------- Transfer Funds
                         {
-                            char *transferAmountStr = readSplit(cLine, lineIndex);
-                            int transferAmount = strToInt(transferAmountStr);
-                            char *recipientID = readSplit(cLine, lineIndex);
-                            
-                            AllAccounts = transferFunds(AllAccounts, acct, recipientID, transferAmount);
-                            debug_DisplayAccountListings(AllAccounts);
-                        }
 
+                        }
                         else
                         {
 
                         }
+
+                        
                     }
-
-                    
-
                 }
             }
 
@@ -180,161 +245,14 @@ int main(char *args)
     }
 
 
-}
-
-UserAccount *findAccount(UserAccount *accounts, char *accountID)
-{
-    if (accounts == NULL)
-        return NULL;
-
-    if (strcmp(accounts->ID, accountID) == 0)
-        return accounts;
-
-    struct UserAccount *ua = accounts->next;
-    while (ua != NULL)
+    // Wait for all processes to complete before exiting
+    if (getpid() == mainThreadPID)
     {
-        if (strcmp(ua->ID, accountID) == 0)
-            return accounts;
-
-        ua = ua->next;
-    }
-    return NULL;
-}
-
-
-int len(char *str)
-{
-    int ret = 0;
-    while (str[ret] != '\0')
-        ret++;
-    return ret;
-}
-
-char *readSplit(char *data, int index)
-{
-    int stopIndex = index;
-    while ((data[stopIndex] != ' ') && (stopIndex < len(data)))
-        stopIndex++;
-
-    int dataLen = stopIndex - index;
-    char *ret = malloc(dataLen + 1);
-
-    clearStr(ret, dataLen + 1);
-
-    int i2 = 0;
-    for (int i = index; i < stopIndex; i++)
-    {
-        ret[i2] = data[i];
-        
-        i2++;
-    }
-
-    if (dataLen > 0)
-        return ret;
-    else    
-        return NULL;
-}
-
-char *readLine(char *data, int index, int size)
-{
-    int stopIndex = index;
-    while ((data[stopIndex] != '\n') && (stopIndex < len(data)))
-        stopIndex++;
-
-    int lineSize = stopIndex - index;
-
-    if (lineSize > 0)
-    {
-        char *lineData = malloc(lineSize + 1);
-        clearStr(lineData, lineSize + 1);
-
-        int i2 = 0;
-        for (int i = index; i < stopIndex; i++)
+        for (int i = 0; i < processCount; i++)
         {
-            lineData[i2] = data[i];
-
-            i2++;
+            int r;
+            waitpid(Processes[i]->pID, &r, 0);
         }
-
-        return lineData;
-    }  
-    else
-        return NULL;
-}
-
-void clearStr(char *str, int len)
-{
-    for (int i = 0; i < len; i++)
-        str[i] = '\0';
-}
-
-int strToInt(char *str)
-{
-    int ret = 0;
-    int counter = 0;
-
-    int i = len(str) - 1;
-    while (i >= 0)
-    {
-        int v = charToInt(str[i]);
-
-        ret += v * (int)pow((double)10, (double)counter);
-
-        i--;
-        counter++;
-    }
-
-    return ret;
-}
-int charToInt(char c)
-{
-    switch (c)
-    {
-        case '0':
-            return 0;
-        case '1':
-            return 1;
-        case '2':
-            return 2;
-        case '3':
-            return 3;
-        case '4':
-            return 4;
-        case '5':
-            return 5;
-        case '6':
-            return 6;
-        case '7':
-            return 7;
-        case '8':
-            return 8;
-        case '9':
-            return 9;
-        default:
-            return 0;
     }
 }
 
-void debug_DisplayAccountListings(UserAccount *accounts)
-{
-    printf("\n\n");
-    if (accounts == NULL)
-    {
-        printf("DEBUG: Accounts listings is empty.");
-        return;
-    }
-
-    printf("DEBUG DISPLAY: ACCOUNT LISTINGS\n");
-    printf("\tAccount ID: %s\n", accounts->ID);
-    printf("\t\tBalance: %d\n", accounts->balance);
-
-    UserAccount *ua = accounts->next;
-    while (ua != NULL)
-    {
-        printf("\tAccount ID: %s\n", ua->ID);
-        printf("\t\tBalance: %d\n", ua->balance);
-        ua = ua->next;
-    }
-    
-    printf("\n\n");
-}
