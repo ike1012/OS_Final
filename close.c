@@ -1,3 +1,9 @@
+//Group A 
+//Jackson
+//Jackson@okstate.edu
+//4/21/24
+
+
 #include "includes.h"
 
 int closeAccount(char *accountID)

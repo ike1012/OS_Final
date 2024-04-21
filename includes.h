@@ -1,3 +1,7 @@
+//Group A 
+//James
+//James.jolly@okstate.edu
+//4/21/24
 // All of the important headers to include
 #include <stdio.h>
 #include <string.h>

@@ -1,3 +1,7 @@
+//Group A 
+//Jackson
+//Jackson@okstate.edu
+//4/21/24
 #include "includes.h"
 
 int transferFunds(char *acctFrom, char *acctTo, int balance)

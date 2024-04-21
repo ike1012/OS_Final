@@ -1,3 +1,7 @@
+//Group A 
+//James
+//James.jolly@okstate.edu
+//4/21/24
 #include "includes.h"
 
 int withdrawFromAccount(char *accountID, int balance)

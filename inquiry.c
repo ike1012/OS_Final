@@ -1,3 +1,7 @@
+//Group A 
+//Isaac
+//Isaac.devlin@okstate.edu
+//4/21/24
 #include "includes.h"
 
 int inquireAccount(char *accountID)
