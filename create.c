@@ -17,6 +17,9 @@ int createNewAccount(char *accountID, int startingBalance)
         {
             // Failed
 
+            if (logTransaction(accountID, "CREATE", startingBalance, NULL, "failed") < 0)
+                printf("Shared memory logging error!\n");
+            
             printf("Failed to create account %s\n", accountID);
 
             // =====================================================
@@ -27,6 +30,9 @@ int createNewAccount(char *accountID, int startingBalance)
         else
         {
             // Success
+
+            if (logTransaction(accountID, "CREATE", startingBalance, NULL, "success") < 0)
+                printf("Shared memory logging error!\n");
 
             printf("Account %s was successfully opened!\n", accountID);
 
@@ -42,6 +48,10 @@ int createNewAccount(char *accountID, int startingBalance)
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
+
+        if (logTransaction(accountID, "CREATE", startingBalance, NULL, "failed") < 0)
+            printf("Shared memory logging error!\n");
+            
         return -1;
     }
 }

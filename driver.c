@@ -8,12 +8,16 @@ int mainReady;
 
 int main(char *args)
 {
-    int testVal = -1;
-    char *test = intToStr(testVal);
-    printf("\n\nTEST: [%d] -> {%s}\n\n", testVal, test);
-
     mainThreadPID = getpid();
     printf("MAIN THREAD: %d\n", mainThreadPID);
+
+
+    //-------------------------------------------------- Set up the shared memory for transaction details
+    if (initSharedMemory() < 0)
+    {
+        printf("Failed to initialize the shared memory\n");
+        exit(EXIT_FAILURE);
+    }
 
     //-------------------------------------------------- Read input file
 
@@ -253,6 +257,9 @@ int main(char *args)
             int r;
             waitpid(Processes[i]->pID, &r, 0);
         }
+        
+        displayTransactionLogs();
     }
+
 }
 

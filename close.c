@@ -13,6 +13,10 @@ int closeAccount(char *accountID)
         // File doesn't exist!
         printf("Close account failed! Account %s doesn't exist!\n", accountID);
         
+
+        if (logTransaction(accountID, "CLOSE", 0, NULL, "failed") < 0)
+            printf("Shared memory logging error!\n");
+            
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
@@ -24,6 +28,9 @@ int closeAccount(char *accountID)
 
         printf("Account %s closed successfully!\n", accountID);
         
+        if (logTransaction(accountID, "CLOSE", 0, NULL, "success") < 0)
+            printf("Shared memory logging error!\n");
+            
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
@@ -32,6 +39,10 @@ int closeAccount(char *accountID)
     else
     {
         printf("Action failed! Could not close account %s!\n", accountID);
+
+        if (logTransaction(accountID, "CLOSE", 0, NULL, "failed") < 0)
+            printf("Shared memory logging error!\n");
+            
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
