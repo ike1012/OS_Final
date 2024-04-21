@@ -112,14 +112,14 @@ char *intToStr(int val)
     if (val < 0)
     {
         L++;
-        ret = malloc(L);
-        clearStr(ret, L);
+        ret = malloc(L + 1);
+        clearStr(ret, L + 1);
         ret[0] = '-';
     }
     else
     {
-        ret = malloc(L);
-        clearStr(ret, L);
+        ret = malloc(L + 1);
+        clearStr(ret, L + 1);
     }
 
 

@@ -11,6 +11,11 @@ int main(char *args)
     mainThreadPID = getpid();
     printf("MAIN THREAD: %d\n", mainThreadPID);
 
+    if (initMutex() < 0)
+    {
+        printf("Failed to initialize the thread sync module\n");
+        exit(EXIT_FAILURE);
+    }
 
     //-------------------------------------------------- Set up the shared memory for transaction details
     if (initSharedMemory() < 0)
@@ -196,8 +201,6 @@ int main(char *args)
                             int r = createNewAccount(acct, startingBalance);
                             if (r == 0)
                                 printf("Process %d, AccountID [%s]: Create-> Created Successfully!\n", forked_pid, Processes[pIndex]->ID);
-                            else
-                                printf("Create returned %d\n", r);
 
                         }
                         else if (strcmp(action, "Close") == 0) //----------------------- Close Account
@@ -209,23 +212,35 @@ int main(char *args)
                         }
                         else if (strcmp(action, "Withdraw") == 0) //----------------------- Withdraw Funds
                         {
-
+                            int bal = strToInt(readSplit(cLine, lineIndex));
+                            printf("Process %d, AccountID [%s]: Withdraw\n", forked_pid, Processes[pIndex]->ID);
+                            int r = withdrawFromAccount(acct, bal);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Withdraw-> Withdrew Successfully!\n", forked_pid, Processes[pIndex]->ID);
                         }
                         else if (strcmp(action, "Deposit") == 0) //----------------------- Deposit Funds
                         {
-
+                            int bal = strToInt(readSplit(cLine, lineIndex));
+                            printf("Process %d, AccountID [%s]: Deposit\n", forked_pid, Processes[pIndex]->ID);
+                            int r = depositIntoAccount(acct, bal);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Deposit-> Deposited Successfully!\n", forked_pid, Processes[pIndex]->ID);
                         }
                         else if (strcmp(action, "Inquiry") == 0) //----------------------- Inquire Funds
                         {
-
+                            printf("Process %d, AccountID [%s]: Inquiry\n", forked_pid, Processes[pIndex]->ID);
+                            int r = inquireAccount(acct);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Inquiry-> Inquired Successfully!\n", forked_pid, Processes[pIndex]->ID);
                         }
                         else if (strcmp(action, "Transfer") == 0) //----------------------- Transfer Funds
                         {
+                            printf("Process %d, AccountID [%s]: Transfer\n", forked_pid, Processes[pIndex]->ID);
 
                         }
                         else
                         {
-
+                            printf("Uknown action\n");
                         }
 
                         

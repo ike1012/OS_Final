@@ -5,6 +5,7 @@ int closeAccount(char *accountID)
     // =====================================================
     // NEED THREAD LOCKING CODE
     // =====================================================
+    lockThreads();
     
     char *fName = concat("accounts/", accountID);
 
@@ -20,6 +21,7 @@ int closeAccount(char *accountID)
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
+        unlockThreads();
         return -1;
     }
 
@@ -34,6 +36,7 @@ int closeAccount(char *accountID)
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
+        unlockThreads();
         return 0;
     }
     else
@@ -46,6 +49,7 @@ int closeAccount(char *accountID)
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
+        unlockThreads();
         return -2;
     }
 

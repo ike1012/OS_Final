@@ -1,34 +1,29 @@
-#include "bank_operations.h"
+#include "includes.h"
 
-// Define a mutex lock to synchronize access to shared resources
-pthread_mutex_t lock;
+pthread_mutex_t threadMutexLock;
 
-// Function to initialize mutex lock
-void initializeLock() {
-    pthread_mutex_init(&lock, NULL);
-}
-
-// Function to destroy mutex lock
-void destroyLock() {
-    pthread_mutex_destroy(&lock);
-}
-
-// Function to perform inquiry operation
-void checkBalance(UserAccount *accounts, char *accountID) {
-    // Lock mutex before accessing shared resources
-    pthread_mutex_lock(&lock);
-
-    // Find the account
-    UserAccount *current = findAccount(accounts, accountID);
-
-    // If account is not found
-    if (current == NULL) {
-        printf("Account \"%s\" not found.\n", accountID);
-    } else {
-        // Display account balance
-        printf("Account ID: %s, Balance: %d\n", current->ID, current->balance);
+int initMutex()
+{
+    if (pthread_mutex_init(&threadMutexLock, NULL) != 0)
+    {
+        printf("Failed to initialize mutex lock!\n");
+        return -1;
     }
 
-    // Unlock mutex after accessing shared resources
-    pthread_mutex_unlock(&lock);
+    return 0;
+}
+
+void closeMutex()
+{
+    pthread_mutex_destroy(&threadMutexLock);
+}
+
+void lockThreads()
+{
+     pthread_mutex_lock(&threadMutexLock);
+}
+
+void unlockThreads()
+{
+     pthread_mutex_unlock(&threadMutexLock);
 }

@@ -36,6 +36,9 @@ typedef struct TransactionDetails
 // Main functions to handle the actions with the accounts
 int createNewAccount(char *accountID, int startingBalance);
 int closeAccount(char *accountID);
+int depositIntoAccount(char *accountID, int balance);
+int withdrawFromAccount(char *accountID, int balance);
+int inquireAccount(char *accountID);
 
 // Various string-related functions to make life easier
 char *concat(char *str1, char *str2);
@@ -59,3 +62,9 @@ int writeFile(char *fileName, char *fileData);
 int initSharedMemory();
 int logTransaction(char *acctID, char *transType, int ammount, char *targetID, char *status);
 void displayTransactionLogs();
+
+// Mutex thread locking
+int initMutex();
+void closeMutex();
+void lockThreads();
+void unlockThreads();

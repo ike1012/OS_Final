@@ -1,22 +1,22 @@
 #include "includes.h"
 
-int depositIntoAccount(char *accountID, int balance)
+int withdrawFromAccount(char *accountID, int balance)
 {
     // =====================================================
     // NEED THREAD LOCKING CODE
     // =====================================================
     lockThreads();
-    
+
     char *fName = concat("accounts/", accountID);
 
     if (fileExists(fName) < 0)
     {
         // Account doesn't exist
-        printf("Failed to deposit, account %s doesn't exist!\n", accountID);
+        printf("Failed to withdraw, account %s doesn't exist!\n", accountID);
 
-        if (logTransaction(accountID, "DEPOSIT", balance, NULL, "failed") < 0)
+        if (logTransaction(accountID, "WITHDRAW", balance, NULL, "failed") < 0)
             printf("Shared memory logging error!\n");
-
+        
         // =====================================================
         // RELEASE THREAD LOCKING CODE
         // =====================================================
@@ -27,9 +27,9 @@ int depositIntoAccount(char *accountID, int balance)
     char *currBal = readFile(fName);
     if (currBal == NULL)
     {
-        printf("Failed to deposit, account %s encountered a read error.\n", accountID);
+        printf("Failed to withdraw, account %s encountered a read error.\n", accountID);
 
-        if (logTransaction(accountID, "DEPOSIT", balance, NULL, "failed") < 0)
+        if (logTransaction(accountID, "WITHDRAW", balance, NULL, "failed") < 0)
             printf("Shared memory logging error!\n");
         
         // =====================================================
@@ -41,16 +41,11 @@ int depositIntoAccount(char *accountID, int balance)
 
     int acctBal = strToInt(currBal);
 
-    acctBal += balance;
-
-    char *newBal = intToStr(acctBal);
-
-    int r = writeFile(fName, newBal);
-    if (r < 0)
+    if (acctBal - balance < 0)
     {
-        printf("Failed to deposit, account %s encountered a write error.\n", accountID);
+        printf("Failed to withdraw, account %s has insufficient funds.\n", accountID);
 
-        if (logTransaction(accountID, "DEPOSIT", balance, NULL, "failed") < 0)
+        if (logTransaction(accountID, "WITHDRAW", balance, NULL, "failed") < 0)
             printf("Shared memory logging error!\n");
         
         // =====================================================
@@ -60,9 +55,28 @@ int depositIntoAccount(char *accountID, int balance)
         return -3;
     }
 
-    printf("Deposited successfully! Account %s new balance: %d\n", accountID, acctBal);
+    acctBal -= balance;
 
-    if (logTransaction(accountID, "DEPOSIT", balance, NULL, "success") < 0)
+    char *newBal = intToStr(acctBal);
+
+    int r = writeFile(fName, newBal);
+    if (r < 0)
+    {
+        printf("Failed to withdraw, account %s encountered a write error.\n", accountID);
+
+        if (logTransaction(accountID, "WITHDRAW", balance, NULL, "failed") < 0)
+            printf("Shared memory logging error!\n");
+        
+        // =====================================================
+        // RELEASE THREAD LOCKING CODE
+        // =====================================================
+        unlockThreads();
+        return -4;
+    }
+
+    printf("Withdrew successfully! Account %s new balance: %d\n", accountID, acctBal);
+
+    if (logTransaction(accountID, "WITHDRAW", balance, NULL, "success") < 0)
         printf("Shared memory logging error!\n");
 
     // =====================================================

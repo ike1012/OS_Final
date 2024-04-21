@@ -25,7 +25,10 @@ char *readFile(char *fileName)
     fseek(f, 0, SEEK_SET);
 
     // Read the file contents
-    char *fData = malloc(fSize);
+    char *fData = malloc(fSize + 1);
+
+    clearStr(fData, fSize + 1);
+
     fread(fData, fSize, 1, f);
 
     // Close the file
