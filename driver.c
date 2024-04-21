@@ -235,8 +235,18 @@ int main(char *args)
                         }
                         else if (strcmp(action, "Transfer") == 0) //----------------------- Transfer Funds
                         {
-                            printf("Process %d, AccountID [%s]: Transfer\n", forked_pid, Processes[pIndex]->ID);
+                            char *iVal = readSplit(cLine, lineIndex);
+                            int bal = strToInt(iVal);
+                            lineIndex += len(iVal) + 1;
 
+                            char *acct2 = readSplit(cLine, lineIndex);
+
+                            printf("Process %d, AccountID [%s]: Transfer: {%s}\n", forked_pid, Processes[pIndex]->ID, acct2);
+                            int r = transferFunds(acct, acct2, bal);
+                            if (r == 0)
+                                printf("Process %d, AccountID [%s]: Transfer-> Transferred Successfully!\n", forked_pid, Processes[pIndex]->ID);
+                            else
+                                printf("TRANSFER RETURNED %d\n", r);
                         }
                         else
                         {

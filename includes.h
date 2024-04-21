@@ -39,6 +39,7 @@ int closeAccount(char *accountID);
 int depositIntoAccount(char *accountID, int balance);
 int withdrawFromAccount(char *accountID, int balance);
 int inquireAccount(char *accountID);
+int transferFunds(char *acctFrom, char *acctTo, int balance);
 
 // Various string-related functions to make life easier
 char *concat(char *str1, char *str2);

@@ -60,7 +60,7 @@ int depositIntoAccount(char *accountID, int balance)
         return -3;
     }
 
-    printf("Deposited successfully! Account %s new balance: %d\n", accountID, acctBal);
+    printf("Deposited %d successfully! Account %s new balance: %d\n", balance, accountID, acctBal);
 
     if (logTransaction(accountID, "DEPOSIT", balance, NULL, "success") < 0)
         printf("Shared memory logging error!\n");
